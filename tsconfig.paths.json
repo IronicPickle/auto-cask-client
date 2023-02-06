@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@config/*": ["./config/*"],
+      "@api/*": ["./api/*"],
+
+      "@lib/*": ["./lib/*"],
+      "@utils/*": ["./lib/utils/*"],
+      "@ts/*": ["./lib/ts/*"],
+      "@enums/*": ["./lib/enums/*"],
+      "@constants/*": ["./lib/constants/*"],
+
+      "@express/*": ["./express/*"],
+      "@bonjour/*": ["./bonjour/*"],
+
+      "@src/*": ["./*"],
+
+      "@shared/*": ["../../auto-cask-shared/*"]
+    }
+  }
+}
