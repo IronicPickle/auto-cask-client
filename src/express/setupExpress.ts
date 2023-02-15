@@ -5,7 +5,10 @@ import { SendFingerprintReq, SendFingerprintRes } from "@shared/ts/api/fingerpri
 import { Fingerprint } from "@lib/ts/generic";
 import fingerprintValidators from "@shared/validators/fingerprintValidators";
 import { parseValidators } from "@shared/utils/generic";
-import { ok, validationError } from "@shared/utils/api";
+import { error, ok, validationError } from "@shared/utils/api";
+import { apiCall } from "@api/api";
+import sendFingerprint from "@api/pumpClients/sendFingerprint";
+import macaddress from "macaddress";
 
 export const expressServer = express();
 
@@ -21,19 +24,33 @@ export default () => {
 
   expressServer.post<"/fingerprint", {}, SendFingerprintRes, Partial<SendFingerprintReq>>(
     "/fingerprint",
-    (req, res) => {
-      const validators = fingerprintValidators.send(req.body);
-      const validation = parseValidators(validators);
+    async (req, res) => {
+      try {
+        const validators = fingerprintValidators.send(req.body);
+        const validation = parseValidators(validators);
 
-      const { userId } = req.body;
+        const { userId } = req.body;
 
-      if (validation.failed || !userId) return validationError(validation)(res);
+        if (validation.failed || !userId) return validationError(validation)(res);
 
-      const fingerprint: Fingerprint = { userId };
+        const fingerprint: Fingerprint = { userId };
 
-      console.log(fingerprint);
+        const mac = await macaddress.one();
 
-      ok({})(res);
+        if (!mac) throw new Error("Could not attain network interfaces' MAC address");
+
+        const { data, error } = await apiCall(sendFingerprint, {
+          mac,
+          userId,
+        });
+
+        if (error || !data) return ok(error, 400)(res);
+
+        ok(data)(res);
+      } catch (err) {
+        console.error(err);
+        error("Something went wrong.")(res);
+      }
     },
   );
 };

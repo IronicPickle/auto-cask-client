@@ -2,6 +2,7 @@ import developmentConfig from "./development.config";
 import productionConfig from "./production.config";
 
 export interface Config {
+  apiUrl: string;
   httpPort: number;
 }
 

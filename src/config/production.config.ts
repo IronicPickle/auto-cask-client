@@ -1,6 +1,7 @@
 import { Config } from "./config";
 
 const config: Config = {
+  apiUrl: "",
   httpPort: 80,
 };
 

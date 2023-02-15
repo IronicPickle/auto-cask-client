@@ -3,24 +3,24 @@ import { log } from "@utils/generic";
 import Bonjour from "bonjour-service";
 import macaddress from "macaddress";
 
-const client = new Bonjour();
+export const bonjourClient = new Bonjour();
 
 export default async () => {
   const mac = await macaddress.one();
 
-  client.unpublishAll();
-  const service = client.publish({
+  bonjourClient.unpublishAll();
+  const service = bonjourClient.publish({
     name: `Auto Cask Client (${mac})`,
     protocol: "tcp",
     type: "http",
     port: config.httpPort,
-    host: "local",
+    host: `${mac}.local`,
     txt: {
       mac,
     },
   });
 
-  service.on("error", err => log(err));
+  service.on("error", err => console.error(err));
 
   service.on("up", () => log("[Bonjour]", `Service broadcasting with mac address ${mac}`));
 };
