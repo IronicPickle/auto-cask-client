@@ -3,6 +3,7 @@ import productionConfig from "./production.config";
 
 export interface Config {
   apiUrl: string;
+  zmqUrl: string;
   httpPort: number;
 }
 
