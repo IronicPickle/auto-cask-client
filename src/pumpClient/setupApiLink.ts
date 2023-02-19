@@ -15,7 +15,7 @@ export default async () => {
   if (!mac) throw new Error("Could not attain network interfaces' MAC address");
 
   const { data, error } = await apiCall(setupPumpClient, {
-    mac,
+    body: { mac },
   });
 
   if (error || !data) {

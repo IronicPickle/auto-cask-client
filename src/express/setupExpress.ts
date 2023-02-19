@@ -1,13 +1,14 @@
 import config from "@config/config";
 import { log } from "@lib/utils/generic";
 import express from "express";
-import { SendFingerprintReq, SendFingerprintRes } from "@shared/ts/api/fingerprint";
+import { CreateFingerprint } from "@shared/ts/api/fingerprint";
 import fingerprintValidators from "@shared/validators/fingerprintValidators";
 import { parseValidators } from "@shared/utils/generic";
 import { conflictError, error, ok, validationError } from "@shared/utils/api";
 import { apiCall } from "@api/api";
-import sendFingerprint from "@api/pumpClients/sendFingerprint";
 import macaddress from "macaddress";
+import createFingerprint from "@api/pumpClients/createFingerprint";
+import WrappedRouter from "@lib/utils/WrappedRouter";
 
 export const expressServer = express();
 
@@ -21,36 +22,37 @@ export default () => {
 
   expressServer.listen(config.httpPort, () => log("[Express]", `Listening on ${config.httpPort}`));
 
-  expressServer.post<"/fingerprint", {}, SendFingerprintRes, Partial<SendFingerprintReq>>(
-    "/fingerprint",
-    async (req, res) => {
-      try {
-        if (process.env.PUMP_ASSOCIATED === "true")
-          return conflictError("Cannot fingerprint on a pump client already associated")(res);
+  const router = new WrappedRouter();
 
-        const validators = fingerprintValidators.send(req.body);
-        const validation = parseValidators(validators);
+  router.post<CreateFingerprint>("/fingerprint", async (req, res) => {
+    try {
+      if (process.env.PUMP_ASSOCIATED === "true")
+        return conflictError("Cannot fingerprint on a pump client already associated")(res);
 
-        const { userId } = req.body;
+      const validators = fingerprintValidators.create(req.body);
+      const validation = parseValidators(validators);
 
-        if (validation.failed || !userId) return validationError(validation)(res);
+      const { userId } = req.body;
 
-        const mac = await macaddress.one();
+      if (validation.failed || !userId) return validationError(validation)(res);
 
-        if (!mac) throw new Error("Could not attain network interfaces' MAC address");
+      const mac = await macaddress.one();
 
-        const { data, error } = await apiCall(sendFingerprint, {
-          mac,
-          userId,
-        });
+      if (!mac) throw new Error("Could not attain network interfaces' MAC address");
 
-        if (error || !data) return ok(error, 400)(res);
+      const { data, error } = await apiCall(createFingerprint, {
+        params: { mac },
+        body: { userId },
+      });
 
-        ok(data)(res);
-      } catch (err) {
-        console.error(err);
-        error("Something went wrong.")(res);
-      }
-    },
-  );
+      if (error || !data) return ok(error, 400)(res);
+
+      ok(data)(res);
+    } catch (err) {
+      console.error(err);
+      error("Something went wrong.")(res);
+    }
+  });
+
+  expressServer.use("/", router.router);
 };
