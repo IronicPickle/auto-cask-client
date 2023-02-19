@@ -6,6 +6,16 @@ import macaddress from "macaddress";
 export const bonjourClient = new Bonjour();
 
 export default async () => {
+  if (process.env.PUMP_ASSOCIATED === "true") return;
+
+  bonjourPublish();
+};
+
+export const bonjourUnpublish = () => {
+  bonjourClient.unpublishAll(() => log("[Bonjour]", "Unpublished service"));
+};
+
+export const bonjourPublish = async () => {
   const mac = await macaddress.one();
 
   bonjourClient.unpublishAll();

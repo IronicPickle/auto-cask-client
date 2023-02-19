@@ -26,9 +26,9 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(async reqConfig => {
-  const accessToken = process.env.API_ACCESS_TOKEN;
+  const publicKey = process.env.PUBLIC_KEY;
 
-  if (accessToken) reqConfig.headers["Authorization"] = `Bearer ${accessToken}`;
+  if (publicKey) reqConfig.headers["Authorization"] = `Bearer ${publicKey}`;
 
   return reqConfig;
 });

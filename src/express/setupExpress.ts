@@ -2,10 +2,9 @@ import config from "@config/config";
 import { log } from "@lib/utils/generic";
 import express from "express";
 import { SendFingerprintReq, SendFingerprintRes } from "@shared/ts/api/fingerprint";
-import { Fingerprint } from "@lib/ts/generic";
 import fingerprintValidators from "@shared/validators/fingerprintValidators";
 import { parseValidators } from "@shared/utils/generic";
-import { error, ok, validationError } from "@shared/utils/api";
+import { conflictError, error, ok, validationError } from "@shared/utils/api";
 import { apiCall } from "@api/api";
 import sendFingerprint from "@api/pumpClients/sendFingerprint";
 import macaddress from "macaddress";
@@ -26,14 +25,15 @@ export default () => {
     "/fingerprint",
     async (req, res) => {
       try {
+        if (process.env.PUMP_ASSOCIATED === "true")
+          return conflictError("Cannot fingerprint on a pump client already associated")(res);
+
         const validators = fingerprintValidators.send(req.body);
         const validation = parseValidators(validators);
 
         const { userId } = req.body;
 
         if (validation.failed || !userId) return validationError(validation)(res);
-
-        const fingerprint: Fingerprint = { userId };
 
         const mac = await macaddress.one();
 

@@ -1,12 +1,13 @@
 import { apiCall } from "@api/api";
 import setupPumpClient from "@api/pumpClients/setupPumpClient";
 import macaddress from "macaddress";
-import fs from "fs";
-import path from "path";
-import { config as loadEnv } from "dotenv";
 import { log } from "@lib/utils/generic";
+import { envWrite } from "@lib/utils/env";
 
 export default async () => {
+  const { PUBLIC_KEY, SECRET_KEY, SERVER_PUBLIC_KEY } = process.env;
+  if (PUBLIC_KEY && SECRET_KEY && SERVER_PUBLIC_KEY) return;
+
   log("[Api Link]", "Running first time pump client setup");
 
   const mac = await macaddress.one();
@@ -22,26 +23,7 @@ export default async () => {
     throw new Error("Failed to setup pump client");
   }
 
-  const envPath = path.join(__dirname, "../../.env");
-  const envLine = `\nAPI_ACCESS_TOKEN=${data.accessToken}`;
-
-  if (fs.existsSync(envPath)) {
-    let envFile = fs.readFileSync(envPath, {
-      encoding: "utf-8",
-    });
-
-    if (envFile.includes("API_ACCESS_TOKEN="))
-      envFile = envFile.replace(/(API_ACCESS_TOKEN=)(.*)(\n?)/g, `$1${data.accessToken}$3`);
-    else envFile = `${envFile}${envLine}`;
-
-    fs.writeFileSync(envPath, envFile, {
-      encoding: "utf-8",
-    });
-  } else {
-    fs.appendFileSync(envPath, envLine, {
-      encoding: "utf-8",
-    });
-  }
-
-  loadEnv();
+  envWrite("PUBLIC_KEY", data.publicKey);
+  envWrite("SECRET_KEY", data.secretKey);
+  envWrite("SERVER_PUBLIC_KEY", data.serverPublicKey);
 };

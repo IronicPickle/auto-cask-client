@@ -1,39 +1,52 @@
 import config from "@config/config";
 import { log } from "@lib/utils/generic";
-import { Dealer, curveKeyPair } from "zeromq";
-import { serialiseZmqRequest, getZmqData } from "@shared/utils/zmq";
+import { Dealer } from "zeromq";
+import { zmqDeserialise, zmqSerialise } from "@shared/utils/zmq";
+import { ZmqRequestType } from "@shared/enums/zmq";
+import { envWrite } from "@lib/utils/env";
+import { bonjourPublish, bonjourUnpublish } from "@bonjour/setupBonjour";
+
+export const sock = new Dealer({});
+
+export const sockSend = async (type: ZmqRequestType, data: object) =>
+  await sock.send(["", zmqSerialise(type, data)]);
 
 export default async () => {
-  const { secretKey, publicKey } = curveKeyPair();
+  const { PUBLIC_KEY, SECRET_KEY, SERVER_PUBLIC_KEY } = process.env;
 
-  console.log({ secretKey, publicKey });
+  if (!PUBLIC_KEY || !SECRET_KEY || !SERVER_PUBLIC_KEY) throw Error("Missing one or more ZMQ keys");
 
-  const sock = new Dealer({
-    curveSecretKey: secretKey,
-    curvePublicKey: publicKey,
-    curveServerKey: "%6S$l}8K9v}/h$P-T}>^7*a9N?hFh*@&HQB6Wd^V",
-    routingId: "Test",
-  });
+  sock.curvePublicKey = PUBLIC_KEY;
+  sock.curveSecretKey = SECRET_KEY;
+  sock.curveServerKey = SERVER_PUBLIC_KEY;
+  sock.routingId = PUBLIC_KEY;
 
   sock.connect(config.zmqUrl);
   log("[ZMQ]", "Connected to", config.zmqUrl);
 
-  await sock.send([
-    "",
-    serialiseZmqRequest("sub-req", {
-      val: "hi",
-    }),
-  ]);
-
   for await (const frames of sock) {
     try {
-      const data = getZmqData(frames, 1);
-      if (!data) continue;
+      const res = zmqDeserialise(frames[1]);
+      if (!res) continue;
 
-      console.log({ data });
+      const { type, data } = res;
+
+      log("[ZMQ]", type, data);
+
+      switch (type) {
+        case ZmqRequestType.PumpAssociated: {
+          bonjourUnpublish();
+          envWrite("PUMP_ASSOCIATED", "true");
+          break;
+        }
+        case ZmqRequestType.PumpUnassociated: {
+          bonjourPublish();
+          envWrite("PUMP_ASSOCIATED", "false");
+          break;
+        }
+      }
     } catch (err) {
       console.error(err);
     }
   }
 };
-/////

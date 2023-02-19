@@ -7,7 +7,7 @@ import setupZeromq from "./zmq/setupZmq";
 loadEnv();
 
 const start = async () => {
-  if (!process.env.API_ACCESS_TOKEN) await setupApiLink();
+  await setupApiLink();
 
   setupExpress();
 
