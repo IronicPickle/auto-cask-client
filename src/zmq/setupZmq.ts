@@ -44,6 +44,9 @@ export default async () => {
           envWrite("PUMP_ASSOCIATED", "false");
           break;
         }
+        case ZmqRequestType.BadgeChanged: {
+          break;
+        }
       }
     } catch (err) {
       console.error(err);
