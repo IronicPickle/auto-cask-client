@@ -7,6 +7,7 @@ export const browser = await puppeteer.launch({
   headless: false,
   defaultViewport: null,
   args: ["--start-maximized", isProd ? "--kiosk" : ""],
+  ignoreDefaultArgs: ["--enable-automation"],
 });
 export const page = await browser.newPage();
 
