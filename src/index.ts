@@ -1,18 +1,18 @@
 import setupBonjour from "@bonjour/setupBonjour";
 import setupExpress from "@express/setupExpress";
 import setupApiLink from "./pumpClient/setupApiLink";
-import { config as loadEnv } from "dotenv";
 import setupZeromq from "./zmq/setupZmq";
+import setupPuppeteer from "./puppeteer/setupPuppeteer";
+
+import { config as loadEnv } from "dotenv";
 
 loadEnv();
 
 const start = async () => {
+  setupPuppeteer();
   await setupApiLink();
-
   setupExpress();
-
   await setupBonjour();
-
   setupZeromq();
 };
 

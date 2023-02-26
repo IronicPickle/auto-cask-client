@@ -5,6 +5,8 @@ import { zmqDeserialise, zmqSerialise } from "@shared/utils/zmq";
 import { ZmqRequestType } from "@shared/enums/zmq";
 import { envWrite } from "@lib/utils/env";
 import { bonjourPublish, bonjourUnpublish } from "@bonjour/setupBonjour";
+import { setPageBadge } from "@src/puppeteer/setupPuppeteer";
+import { Badge } from "@src/../../auto-cask-shared/ts/api/generic";
 
 export const sock = new Dealer({});
 
@@ -20,6 +22,8 @@ export default async () => {
   sock.curveSecretKey = SECRET_KEY;
   sock.curveServerKey = SERVER_PUBLIC_KEY;
   sock.routingId = PUBLIC_KEY;
+
+  sock.events.on("connect", () => sockSend(ZmqRequestType.GetBadge, {}));
 
   sock.connect(config.zmqUrl);
   log("[ZMQ]", "Connected to", config.zmqUrl);
@@ -44,7 +48,9 @@ export default async () => {
           envWrite("PUMP_ASSOCIATED", "false");
           break;
         }
-        case ZmqRequestType.BadgeChanged: {
+        case ZmqRequestType.BadgeData: {
+          const badge = data as Badge;
+          setPageBadge(badge._id);
           break;
         }
       }

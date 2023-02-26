@@ -1,4 +1,6 @@
 const path = require("path");
+const WatchExternalFilesPlugin = require("webpack-watch-files-plugin").default;
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   target: "node",
@@ -45,4 +47,15 @@ module.exports = {
   watchOptions: {
     ignored: ["/node_modules", "/build"],
   },
+  experiments: {
+    topLevelAwait: true,
+  },
+  plugins: [
+    new WatchExternalFilesPlugin({
+      files: ["./src/**/*.html"],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [{ from: "./src/static", to: "./static" }],
+    }),
+  ],
 };
