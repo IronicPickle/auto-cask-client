@@ -9,11 +9,11 @@ import { config as loadEnv } from "dotenv";
 loadEnv();
 
 const start = async () => {
-  setupPuppeteer();
+  await setupPuppeteer();
   await setupApiLink();
   setupExpress();
   await setupBonjour();
-  setupZeromq();
+  await setupZeromq();
 };
 
 start();
