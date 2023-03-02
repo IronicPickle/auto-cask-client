@@ -14,7 +14,7 @@ export default async () => {
 
   if (!mac) throw new Error("Could not attain network interfaces' MAC address");
 
-  const { data, error } = await attempt(mac);
+  const data = await attempt(mac);
 
   envWrite("PUBLIC_KEY", data.publicKey);
   envWrite("SECRET_KEY", data.secretKey);
@@ -23,10 +23,10 @@ export default async () => {
 
 const attempt = async (mac: string) => {
   while (true) {
-    const res = await apiCall(setupPumpClient, {
+    const { data, error } = await apiCall(setupPumpClient, {
       body: { mac },
     });
-    if (!res.error && res.data) return res;
+    if (!error && data) return data;
     log("Setup failed, trying in 5 seconds...");
     await sleep(5 * 1000);
   }
