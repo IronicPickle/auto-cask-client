@@ -16,11 +16,6 @@ export default async () => {
 
   const { data, error } = await attempt(mac);
 
-  if (error || !data) {
-    console.error(error);
-    throw new Error("Failed to setup pump client");
-  }
-
   envWrite("PUBLIC_KEY", data.publicKey);
   envWrite("SECRET_KEY", data.secretKey);
   envWrite("SERVER_PUBLIC_KEY", data.serverPublicKey);
