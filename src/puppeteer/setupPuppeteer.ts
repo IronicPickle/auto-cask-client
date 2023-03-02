@@ -31,8 +31,6 @@ export const setPageBadge = (id: string) => {
 };
 
 export default async () => {
-  page.once("domcontentloaded", () => setPageBadge(""));
-
   const indexPath = path.resolve(path.join(__dirname, "../../build/static/index.html"));
 
   await page.goto(`file://${indexPath}`);
