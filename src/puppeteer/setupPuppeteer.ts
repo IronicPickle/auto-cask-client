@@ -8,6 +8,7 @@ export const browser = await puppeteer.launch({
   defaultViewport: null,
   args: ["--start-maximized", isProd ? "--kiosk" : ""],
   ignoreDefaultArgs: ["--enable-automation"],
+  executablePath: isProd ? "/usr/bin/chromium-browser" : undefined,
 });
 export const page = await browser.newPage();
 
