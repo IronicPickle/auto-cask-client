@@ -23,7 +23,9 @@ export default async () => {
   sock.curveServerKey = SERVER_PUBLIC_KEY;
   sock.routingId = PUBLIC_KEY;
 
-  sock.events.on("connect", () => setTimeout(() => sockSend(ZmqRequestType.GetBadge, {}), 2500));
+  sock.sendTimeout = -1;
+
+  sock.events.on("connect", () => sockSend(ZmqRequestType.GetBadge, {}));
 
   sock.connect(config.zmqUrl);
   log("[ZMQ]", "Connected to", config.zmqUrl);
