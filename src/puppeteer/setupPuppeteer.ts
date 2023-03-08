@@ -5,8 +5,11 @@ import { isProd } from "@config/config";
 
 export const browser = await puppeteer.launch({
   headless: false,
-  defaultViewport: null,
-  args: ["--start-maximized", isProd ? "--kiosk" : ""],
+  defaultViewport: {
+    width: 480,
+    height: 800,
+  },
+  args: ["--start-maximized", isProd ? "--kiosk" : "", `--window-size=480,800`],
   ignoreDefaultArgs: ["--enable-automation"],
   executablePath: isProd ? "/usr/bin/chromium-browser" : undefined,
 });
