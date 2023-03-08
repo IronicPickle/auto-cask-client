@@ -6,10 +6,14 @@ import { isProd } from "@config/config";
 export const browser = await puppeteer.launch({
   headless: false,
   defaultViewport: {
-    width: 480,
-    height: 800,
+    width: isProd ? 800 : 480,
+    height: isProd ? 480 : 800,
   },
-  args: ["--start-maximized", isProd ? "--kiosk" : "", `--window-size=480,800`],
+  args: [
+    "--start-maximized",
+    isProd ? "--kiosk" : "",
+    isProd ? `--window-size=800,480` : `--window-size=480,800`,
+  ],
   ignoreDefaultArgs: ["--enable-automation"],
   executablePath: isProd ? "/usr/bin/chromium-browser" : undefined,
 });
@@ -21,12 +25,14 @@ export const setPageBadge = (id: string) => {
   try {
     page.$eval(
       "#badge-image",
-      (e, imgSrc) => {
+      (e, imgSrc, isProd) => {
         const element = e as HTMLInputElement;
 
         element.src = imgSrc;
+        if (isProd) element.style.transform = "rotate(-90deg)";
       },
       imgSrc,
+      isProd,
     );
   } catch (err) {
     log(err);
