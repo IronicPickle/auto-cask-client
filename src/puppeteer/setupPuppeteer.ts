@@ -29,7 +29,7 @@ export const setPageBadge = (id: string) => {
         const element = e as HTMLInputElement;
 
         element.src = imgSrc;
-        if (isProd) element.style.transform = "rotate(-90deg)";
+        if (isProd) element.style.transform = "rotate(-90deg) scaleX(1.1)";
       },
       imgSrc,
       isProd,
